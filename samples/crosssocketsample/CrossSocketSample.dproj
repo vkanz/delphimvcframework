@@ -123,7 +123,7 @@
             <FormType>dfm</FormType>
             <DesignClass>TWebModule</DesignClass>
         </DCCReference>
-        <DCCReference Include="..\..\sources\MVCFramework.CrossSocketBridge.pas"/>
+        <DCCReference Include="..\..\sources\MVCFramework.WebBrokerCrossSocketBridge.pas"/>
         <DCCReference Include="C:\DLib\Delphi-Cross-Socket\Net\Net.CrossSocket.Iocp.pas"/>
         <DCCReference Include="C:\DLib\Delphi-Cross-Socket\Net\Net.CrossHttpServer.pas"/>
         <BuildConfiguration Include="Release">

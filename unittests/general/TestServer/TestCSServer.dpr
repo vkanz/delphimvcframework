@@ -4,7 +4,7 @@
 
 uses
   System.SysUtils,
-  MVCFramework.CrossSocketBridge,
+  MVCFramework.WebBrokerCrossSocketBridge,
   Web.WebReq,
   {$IFNDEF LINUX}
   Winapi.Windows,

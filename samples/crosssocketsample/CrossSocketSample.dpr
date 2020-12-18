@@ -12,7 +12,7 @@ uses
   Web.WebBroker,
   Controllers.MainU in 'Controllers.MainU.pas',
   WebModuleU in 'WebModuleU.pas' {MyWebModule: TWebModule},
-  MVCFramework.CrossSocketBridge in '..\..\sources\MVCFramework.CrossSocketBridge.pas',
+  MVCFramework.WebBrokerCrossSocketBridge in '..\..\sources\MVCFramework.WebBrokerCrossSocketBridge.pas',
   Net.CrossSocket.Iocp in 'C:\DLib\Delphi-Cross-Socket\Net\Net.CrossSocket.Iocp.pas',
   Net.CrossHttpServer in 'C:\DLib\Delphi-Cross-Socket\Net\Net.CrossHttpServer.pas';
 
