@@ -1,0 +1,72 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{46BEC1EC-9796-4022-96DD-816CF873DBA4}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="CrossSocketSample.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="C:\DLib\Delphi-Cross-Socket\Net\Demos\CrossHttpConsole\CrossHttpConsole.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="CrossSocketSampleCRUD.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="..\articles_crud_vcl_client\articles_crud_vcl_client.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="CrossSocketSample">
+        <MSBuild Projects="CrossSocketSample.dproj"/>
+    </Target>
+    <Target Name="CrossSocketSample:Clean">
+        <MSBuild Projects="CrossSocketSample.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="CrossSocketSample:Make">
+        <MSBuild Projects="CrossSocketSample.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="CrossHttpConsole">
+        <MSBuild Projects="C:\DLib\Delphi-Cross-Socket\Net\Demos\CrossHttpConsole\CrossHttpConsole.dproj"/>
+    </Target>
+    <Target Name="CrossHttpConsole:Clean">
+        <MSBuild Projects="C:\DLib\Delphi-Cross-Socket\Net\Demos\CrossHttpConsole\CrossHttpConsole.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="CrossHttpConsole:Make">
+        <MSBuild Projects="C:\DLib\Delphi-Cross-Socket\Net\Demos\CrossHttpConsole\CrossHttpConsole.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="CrossSocketSampleCRUD">
+        <MSBuild Projects="CrossSocketSampleCRUD.dproj"/>
+    </Target>
+    <Target Name="CrossSocketSampleCRUD:Clean">
+        <MSBuild Projects="CrossSocketSampleCRUD.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="CrossSocketSampleCRUD:Make">
+        <MSBuild Projects="CrossSocketSampleCRUD.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="articles_crud_vcl_client">
+        <MSBuild Projects="..\articles_crud_vcl_client\articles_crud_vcl_client.dproj"/>
+    </Target>
+    <Target Name="articles_crud_vcl_client:Clean">
+        <MSBuild Projects="..\articles_crud_vcl_client\articles_crud_vcl_client.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="articles_crud_vcl_client:Make">
+        <MSBuild Projects="..\articles_crud_vcl_client\articles_crud_vcl_client.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="CrossSocketSample;CrossHttpConsole;CrossSocketSampleCRUD;articles_crud_vcl_client"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="CrossSocketSample:Clean;CrossHttpConsole:Clean;CrossSocketSampleCRUD:Clean;articles_crud_vcl_client:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="CrossSocketSample:Make;CrossHttpConsole:Make;CrossSocketSampleCRUD:Make;articles_crud_vcl_client:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

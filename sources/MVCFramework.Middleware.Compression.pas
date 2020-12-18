@@ -41,7 +41,8 @@ type
       const AHandled: Boolean);
     procedure OnBeforeRouting(AContext: TWebContext; var AHandled: Boolean);
     procedure OnBeforeControllerAction(AContext: TWebContext;
-      const AControllerQualifiedClassName: string; const AActionNAme: string; var AHandled: Boolean);
+      const AControllerQualifiedClassName: string; const AActionNAme: string;
+      var AHandled: Boolean);
     procedure OnAfterRouting(AContext: TWebContext; const AHandled: Boolean);
   public
     constructor Create(aCompressionThreshold: Integer = 1024); virtual;
@@ -137,7 +138,7 @@ begin
   lContentStreamHelper.Position := 0;
   lMemStream := TMemoryStream.Create;
   try
-    {TODO -oDanieleT -cGeneral : Use directly lContentStreamHelper?}
+    { TODO -oDanieleT -cGeneral : Use directly lContentStreamHelper? }
     lZStream := TZCompressionStream.Create(lMemStream, TZCompressionLevel.zcMax,
       MVC_COMPRESSION_ZLIB_WINDOW_BITS[lRespCompressionType]);
     try
@@ -147,13 +148,16 @@ begin
     end;
     lMemStream.Position := 0;
 
-    AContext.Response.Content := '';
+    // AContext.Response.Content := '';
+
     lContentStreamHelper.Size := 0;
     lContentStreamHelper.CopyFrom(lMemStream, 0);
 {$IF Defined(SeattleOrBetter)}
-    AContext.Response.RawWebResponse.ContentEncoding := MVC_COMPRESSION_TYPE_AS_STRING[lRespCompressionType];
+    AContext.Response.RawWebResponse.ContentEncoding := MVC_COMPRESSION_TYPE_AS_STRING
+      [lRespCompressionType];
 {$ELSE}
-    AContext.Response.RawWebResponse.ContentEncoding := AnsiString(MVC_COMPRESSION_TYPE_AS_STRING[lRespCompressionType]);
+    AContext.Response.RawWebResponse.ContentEncoding :=
+      AnsiString(MVC_COMPRESSION_TYPE_AS_STRING[lRespCompressionType]);
 {$ENDIF}
   finally
     lMemStream.Free;

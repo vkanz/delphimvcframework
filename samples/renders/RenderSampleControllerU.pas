@@ -46,13 +46,13 @@ type
     procedure GetCustomersWithCallback;
 
     [MVCHTTPMethod([httpGET])]
+    [MVCPath('/customers/simple')]
+    procedure GetCustomers_AsDataSet;
+
+    [MVCHTTPMethod([httpGET])]
     [MVCPath('/customers/($ID)')]
     [MVCProduces('text/plain')]
     procedure GetPerson_AsText(const ID: Integer);
-
-    [MVCHTTPMethod([httpGET])]
-    [MVCPath('/customers/simple')]
-    procedure GetCustomers_AsDataSet;
 
     [MVCHTTPMethod([httpGET])]
     [MVCPath('/dateandtimes/showcase')]
