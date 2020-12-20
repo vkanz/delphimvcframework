@@ -274,6 +274,7 @@ type
     function GetMapping: TMVCFieldsMapping;
     function LoadByPK(const id: int64): Boolean; overload; virtual;
     function LoadByPK(const id: string): Boolean; overload; virtual;
+    function LoadByPK(const id: TGuid): Boolean; overload; virtual;
     procedure Update;
     procedure Delete;
     function TableInfo: string;
@@ -293,6 +294,8 @@ type
     class function GetByPK(const aClass: TMVCActiveRecordClass; const aValue: int64;
       const RaiseExceptionIfNotFound: Boolean = True): TMVCActiveRecord; overload;
     class function GetByPK(const aClass: TMVCActiveRecordClass; const aValue: string;
+      const RaiseExceptionIfNotFound: Boolean = True): TMVCActiveRecord; overload;
+    class function GetByPK(const aClass: TMVCActiveRecordClass; const aValue: TGuid;
       const RaiseExceptionIfNotFound: Boolean = True): TMVCActiveRecord; overload;
     class function GetScalar(const SQL: string; const Params: array of Variant): Variant;
     class function Select(const aClass: TMVCActiveRecordClass; const SQL: string; const Params: array of Variant)
@@ -321,6 +324,8 @@ type
     class function GetByPK<T: TMVCActiveRecord, constructor>(const aValue: int64;
       const RaiseExceptionIfNotFound: Boolean = True): T; overload;
     class function GetByPK<T: TMVCActiveRecord, constructor>(const aValue: string;
+      const RaiseExceptionIfNotFound: Boolean = True): T; overload;
+    class function GetByPK<T: TMVCActiveRecord, constructor>(const aValue: TGuid;
       const RaiseExceptionIfNotFound: Boolean = True): T; overload;
     class function Select<T: TMVCActiveRecord, constructor>(const SQL: string; const Params: array of Variant;
       const Options: TMVCActiveRecordLoadOptions = []): TObjectList<T>; overload;
@@ -957,10 +962,14 @@ begin
           begin
             fPrimaryKeyFieldType := ftString;
           end
+          else if lPrimaryFieldTypeAsStr.EndsWith('tguid') then
+          begin
+            fPrimaryKeyFieldType := ftGuid;
+          end
           else
           begin
             raise EMVCActiveRecord.Create
-              ('Allowed primary key types are: (Nullable)Integer, (Nullable)Int64, (Nullable)String - found: ' +
+              ('Allowed primary key types are: (Nullable)Integer, (Nullable)Int64, (Nullable)String, TGuid - found: ' +
               lPrimaryFieldTypeAsStr);
           end;
           fPrimaryKeyFieldName := MVCTableFieldAttribute(lAttribute).FieldName;
@@ -1054,7 +1063,7 @@ function TMVCActiveRecord.InternalSelectRQL(const RQL: string; const MaxRecordCo
 var
   lSQL: string;
 begin
-  lSQL := SQLGenerator.CreateSQLWhereByRQL(RQL, GetMapping, True, false, MaxRecordCount);
+  lSQL := SQLGenerator.CreateSQLWhereByRQL(RQL, GetMapping, True, False, MaxRecordCount);
   LogD(Format('RQL [%s] => SQL [%s]', [RQL, lSQL]));
   Result := Where(TMVCActiveRecordClass(Self.ClassType), lSQL, []);
 end;
@@ -1636,42 +1645,13 @@ begin
   end;
 
   case aValue.TypeInfo.Kind of
-    tkUString:
+    tkString, tkUString:
       begin
         case aParam.DataType of
-          ftUnknown, ftString:
-            begin
-              aParam.AsWideString := aValue.AsString
-            end;
-          ftWideString:
-            begin
-              aParam.AsWideString := aValue.AsString;
-            end;
-          ftWideMemo:
-            begin
-              aParam.AsWideMemo := aValue.AsString;
-            end;
-          ftMemo:
-            begin
-              aParam.AsMemo := AnsiString(aValue.AsString);
-            end;
-        else
-          begin
-            raise EMVCActiveRecord.CreateFmt('Invalid parameter type for (tkUString) [%s]', [lName]);
-          end;
-        end;
-      end;
-    tkString:
-      begin
-        case aParam.DataType of
-          ftUnknown, ftString:
+          ftUnknown, ftString, ftWideString:
             begin
               aParam.AsString := aValue.AsString;
             end;
-          ftWideString:
-            begin
-              aParam.AsWideString := aValue.AsString;
-            end;
           ftWideMemo:
             begin
               aParam.AsWideMemo := aValue.AsString;
@@ -1682,7 +1662,7 @@ begin
             end;
         else
           begin
-            raise EMVCActiveRecord.CreateFmt('Invalid parameter type for (tkString) [%s]', [lName]);
+            raise EMVCActiveRecord.CreateFmt('Invalid parameter type for (tkString, tkUString) [%s]', [lName]);
           end;
         end;
       end;
@@ -1739,11 +1719,11 @@ begin
         if (aValue.AsObject <> nil) and (not aValue.IsInstanceOf(TStream)) then
           raise EMVCActiveRecord.CreateFmt('Unsupported reference type for param %s: %s',
             [aParam.Name, aValue.AsObject.ClassName]);
-        { .$IF Defined(SeattleOrBetter) }
-        // lStream := aValue.AsType<TStream>();
-        { .$ELSE }
+{$IF Defined(SeattleOrBetter)}
         lStream := aValue.AsType<TStream>();
-        { .$ENDIF }
+{$ELSE}
+        lStream := aValue.AsType<TStream>();
+{$ENDIF}
         if Assigned(lStream) then
         begin
           lStream.Position := 0;
@@ -1903,6 +1883,25 @@ begin
     end;
   end;
   OnAfterLoad;
+end;
+
+function TMVCActiveRecord.LoadByPK(const id: TGuid): Boolean;
+var
+  SQL: string;
+  lDataSet: TDataSet;
+begin
+  CheckAction(TMVCEntityAction.eaRetrieve);
+  SQL := SQLGenerator.CreateSelectByPKSQL(fTableName, fMap, fPrimaryKeyFieldName, fPrimaryKeyOptions);
+  lDataSet := ExecQuery(SQL, [id.ToString], [ftGuid], GetConnection);
+  try
+    Result := not lDataSet.Eof;
+    if Result then
+    begin
+      LoadByDataset(lDataSet);
+    end;
+  finally
+    lDataSet.Free;
+  end;
 end;
 
 function TMVCActiveRecord.LoadByPK(const id: string): Boolean;
@@ -2144,7 +2143,12 @@ var
 begin
   lAR := T.Create;
   try
-    lSQL := lAR.SQLGenerator.CreateSQLWhereByRQL(RQL, lAR.GetMapping, MaxRecordCount > -1, false, MaxRecordCount).Trim;
+    lSQL := lAR.SQLGenerator.CreateSQLWhereByRQL(
+      RQL,
+      lAR.GetMapping,
+      MaxRecordCount > -1,
+      False,
+      MaxRecordCount).Trim;
     // LogD(Format('RQL [%s] => SQL [%s]', [RQL, lSQL]));
     if lSQL.StartsWith('where', True) then
       lSQL := lSQL.Remove(0, 5).Trim;
@@ -2540,11 +2544,7 @@ begin
       ('Cannot update an entity if all fields are transient. Class [%s] mapped on table [%s]', [ClassName, fTableName]);
   end;
   SQL := SQLGenerator.CreateUpdateSQL(fTableName, fMap, fPrimaryKeyFieldName, fPrimaryKeyOptions);
-  if ExecNonQuery(SQL, false) = 0 then
-  begin
-    raise EMVCActiveRecordNotFound.CreateFmt('No record updated for key [Entity: %s][PK: %s]',
-      [ClassName, fPrimaryKeyFieldName]);
-  end;
+  ExecNonQuery(SQL, false);
   OnAfterUpdate;
   OnAfterInsertOrUpdate;
 end;
@@ -2971,6 +2971,44 @@ begin
     Writeable := ((FieldOptions * [foReadOnly, foTransient, foAutoGenerated]) = []);
     // Readable := (not (foWriteOnly in FieldOptions)) and (not(foTransient in FieldOptions));
     Readable := (FieldOptions * [foWriteOnly, foTransient]) = [];
+  end;
+end;
+
+class function TMVCActiveRecord.GetByPK(const aClass: TMVCActiveRecordClass; const aValue: TGuid;
+  const RaiseExceptionIfNotFound: Boolean): TMVCActiveRecord;
+begin
+  Result := aClass.Create;
+  if not Result.LoadByPK(aValue) then
+  begin
+    Result.Free;
+    if RaiseExceptionIfNotFound then
+    begin
+      raise EMVCActiveRecordNotFound.Create('Data not found');
+    end
+    else
+    begin
+      Result := nil;
+    end;
+  end;
+end;
+
+class function TMVCActiveRecordHelper.GetByPK<T>(const aValue: TGuid; const RaiseExceptionIfNotFound: Boolean): T;
+var
+  lActiveRecord: TMVCActiveRecord;
+begin
+  Result := T.Create;
+  lActiveRecord := TMVCActiveRecord(Result);
+  if not lActiveRecord.LoadByPK(aValue) then
+  begin
+    Result.Free;
+    if RaiseExceptionIfNotFound then
+    begin
+      raise EMVCActiveRecordNotFound.Create('Data not found');
+    end
+    else
+    begin
+      Result := nil;
+    end;
   end;
 end;
 
