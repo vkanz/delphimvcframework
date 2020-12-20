@@ -29,6 +29,10 @@ type
     [MVCPath('/setcookie')]
     [MVCHTTPMethod([httpGET])]
     procedure SetCookie;
+
+    [MVCPath('/cookie')]
+    [MVCHTTPMethod([httpGET])]
+    procedure ReadCookie;
   end;
 
   TEntity = class
@@ -52,6 +56,11 @@ procedure TMyController.Index;
 begin
   // use Context property to access to the HTTP request and response
   Render('Hello DelphiMVCFramework World');
+end;
+
+procedure TMyController.ReadCookie;
+begin
+  Render('Cookie was ' + Context.Request.Cookie('pippo'));
 end;
 
 procedure TMyController.SetCookie;

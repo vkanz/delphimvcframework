@@ -301,15 +301,6 @@ type
     property Values: string read fValues write fValues;
   end;
 
-  // test
-  // TMVCHackHTTPAppRequest = class(TIdHTTPAppRequest)
-  // private
-  // function GetHeaders: TStringList;
-  // public
-  // property Headers: TStringList read GetHeaders;
-  // end;
-  // test-end
-
   TMVCWebRequest = class
   private
     FQueryParams: TDictionary<string, string>;
@@ -1033,7 +1024,8 @@ uses
   IdURI,
   MVCFramework.SysControllers,
   MVCFramework.Serializer.JsonDataObjects,
-  MVCFramework.JSONRPC, MVCFramework.Router, MVCFramework.Serializer.HTML;
+  MVCFramework.JSONRPC, MVCFramework.Router, MVCFramework.Serializer.HTML,
+  MVCFramework.WebBrokerCrossSocketBridge;
 
 var
   _IsShuttingDown: Int64 = 0;
@@ -3063,19 +3055,20 @@ begin
     begin
       AContext.Response.SetCustomHeader('Last-Modified', LocalDateTimeToHttpStr(FileDate));
       S := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyNone);
-      try
-        lMS := TMemoryStream.Create;
-        try
-          lMS.CopyFrom(S, 0);
-          lMS.Position := 0;
-        except
-          lMS.Free;
-          raise;
-        end;
-      finally
-        S.Free;
-      end;
-      AContext.Response.SetContentStream(lMS, AMediaType);
+      AContext.Response.SetContentStream(S, AMediaType);
+//      try
+//        lMS := TMemoryStream.Create;
+//        try
+//          lMS.CopyFrom(S, 0);
+//          lMS.Position := 0;
+//        except
+//          lMS.Free;
+//          raise;
+//        end;
+//      finally
+//        S.Free;
+//      end;
+//      AContext.Response.SetContentStream(lMS, AMediaType);
     end;
   end;
 end;

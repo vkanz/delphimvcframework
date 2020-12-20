@@ -4,7 +4,6 @@
 
 uses
   System.SysUtils,
-  MVCFramework.WebBrokerCrossSocketBridge,
   Web.WebReq,
   {$IFNDEF LINUX}
   Winapi.Windows,
@@ -24,7 +23,8 @@ uses
   MVCFramework.JSONRPC in '..\..\..\sources\MVCFramework.JSONRPC.pas',
   RandomUtilsU in '..\..\..\samples\commons\RandomUtilsU.pas',
   MVCFramework.Serializer.HTML in '..\..\..\sources\MVCFramework.Serializer.HTML.pas',
-  MVCFramework.Tests.Serializer.Entities in '..\..\common\MVCFramework.Tests.Serializer.Entities.pas';
+  MVCFramework.Tests.Serializer.Entities in '..\..\common\MVCFramework.Tests.Serializer.Entities.pas',
+  MVCFramework.WebBrokerCrossSocketBridge in '..\..\..\sources\MVCFramework.WebBrokerCrossSocketBridge.pas';
 
 {$R *.res}
 
